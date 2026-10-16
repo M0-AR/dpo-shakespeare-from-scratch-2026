@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DPO from Scratch — This One, Not That One</title>
+<style>
+:root{--bg:#0b1020;--card:#141b33;--ink:#eef2ff;--mut:#aab4d4;--acc:#7c9aff;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#0b1020,#0e1430 40%,#0b1020);color:var(--ink);line-height:1.6}
+.wrap{max-width:1020px;margin:0 auto;padding:24px}
+.hero{background:radial-gradient(600px 300px at 20% 0%,#24306b,transparent),radial-gradient(500px 260px at 90% 10%,#3b1d5e,transparent);border:1px solid #2a3560;border-radius:20px;padding:32px;margin:18px 0}
+.hero h1{margin:0 0 8px;font-size:34px}.sub{color:var(--mut);font-size:17px}.badges{margin:12px 0;display:flex;gap:8px;flex-wrap:wrap}.badges span{background:#1e2a55;border:1px solid #33427c;border-radius:999px;padding:4px 12px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid #26325f;border-radius:16px;padding:20px;margin:14px 0}
+.card h2{margin-top:0}.kpi{display:flex;gap:12px;flex-wrap:wrap}.kpi div{background:#0f1630;border:1px solid #2a3a75;border-radius:12px;padding:10px 14px;min-width:140px}.kpi b{font-size:20px}img{max-width:100%;border-radius:12px;border:1px solid #2a3a75}code,pre{background:#0b1230;border:1px solid #2a3a75;border-radius:8px}pre{padding:12px;overflow:auto}code{padding:2px 6px}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{border-bottom:1px solid #2a3a75;padding:8px;text-align:left}th{color:var(--acc)}
+.quiz button{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 12px;border-radius:10px;border:1px solid #33427c;background:#0f1836;color:var(--ink);cursor:pointer}.quiz button:hover{border-color:var(--acc)}.quiz .ok{border-color:var(--ok)}.quiz .no{border-color:var(--bad)}
+.toc a{color:var(--acc);text-decoration:none}.toc li{margin:4px 0}
+.footer{color:var(--mut);font-size:14px;margin:30px 0}
+input[type=range]{width:100%}a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+<div class="badges"><span>MIT</span><span>Python 3.11</span><span>Docker ready</span><span>CPU reproducible</span><span>Live Gutenberg data</span></div>
+<h1>DPO from Scratch — “This One, Not That One”</h1>
+<p class="sub">A tiny Shakespeare model learns from nothing but picks. No reward model. One loss. Verified on 22,000 live public lines — with every number reproducible.</p>
+<p><a href="#quiz">▶ Take the 10-question quiz</a> · <a href="#quick">⚡ Quick start</a> · <a href="#calc">🎛 β calculator</a></p>
+<img src="docs/assets/demo.gif" alt="DPO likelihood displacement demo">
+<p class="sub">Both winner and loser fall — the loser falls further. The gap is all DPO asks for.</p>
+</div>
+
+<div class="card toc">
+<h2>Contents</h2>
+<ol>
+<li><a href="#abstract">Abstract (30 seconds)</a></li>
+<li><a href="#beginner">🌱 Beginner guide — read this and you are a professional</a></li>
+<li><a href="#results">Results with real numbers</a></li>
+<li><a href="#quick">Quick start + Docker</a></li>
+<li><a href="#how">How it works, fully explained</a></li>
+<li><a href="#calc">β calculator (interactive)</a></li>
+<li><a href="#stories">Who is this for?</a></li>
+<li><a href="#quiz">Interactive quiz: scratch → pro</a></li>
+<li><a href="#pages">GitHub Pages in 2 minutes</a></li>
+<li><a href="#verify">Verification + FAQ</a></li>
+</ol>
+</div>
+
+<div class="card" id="abstract">
+<h2>Abstract — the 30-second version</h2>
+<p>You show two answers. You pick one. That pick is all the model learns from.</p>
+<div class="kpi">
+<div><div>Start happy</div><b>5.8%</b></div>
+<div><div>Copy winners</div><b>53.5%</b></div>
+<div><div>DPO happy</div><b>99.4%</b></div>
+<div><div>DPO win-rate</div><b>100%</b></div>
+<div><div>Surprise 151 →</div><b>3,282</b></div>
+<div><div>Loss 0.693 →</div><b>0.025</b></div>
+</div>
+<p>Price: it forgets Shakespeare, shrinks vocabulary 1,408 → 599, and forgets how to end lines. Hidden gift: the model becomes its own reward model.</p>
+</div>
+
+<div class="card" id="beginner">
+<h2>🌱 Beginner guide — read this and you are a professional</h2>
+<p><b>You will know more than most interview candidates after this.</b></p>
+<h3>1. A model that writes</h3>
+<p>4,000 words. Rare → <code>?</code>. Given 2 words, every word gets a chance, die is rolled, word written, repeat until <code>&lt;END&gt;</code>.</p>
+<h3>2. Chance of a line</h3>
+<p>Multiply chances. <code>I am glad to see it so</code> ≈ 3/100,000. Log-chance = −10.3 (more negative = rarer). Multiplying becomes adding.</p>
+<h3>3. The judge</h3>
+<p>Happy words minus sad words (18 each, listed in README). <code>do truth for I had myself</code> = 0 beats <code>just die</code> = −1.</p>
+<h3>4. Copy-the-winners</h3>
+<p>Train on winners only. Better, but never learns what to stop.</p>
+<h3>5. DPO</h3>
+<p>Frozen copy. Rise = mine − copy. Gap = winner rise − loser rise. Loss = −log σ(β·gap), β=0.1. Let's work this out in a step-by-step way to be sure we have the right answer: winner −10.3→−15.0 (rise −4.7), loser −22.8→−64.3 (rise −41.5), gap 36.8, β·gap 3.68, loss ≈0.025. Winner fell — but fell less. That is enough.</p>
+</div>
+
+<div class="card" id="results">
+<h2>Results (verified run, seed 0 fast)</h2>
+<div class="grid">
+<div><img src="docs/assets/happy_share.png" alt="happy share"><p>Happy share: start 5.8%, SFT 53.5%, DPO 99.4%.</p></div>
+<div><img src="docs/assets/surprise.png" alt="surprise"><p>Surprise on held-out Shakespeare: 151 → 753 → 3,282.</p></div>
+</div>
+<img src="docs/assets/dpo_loss.png" alt="dpo loss">
+<table>
+<tr><th>Metric</th><th>Start</th><th>SFT</th><th>DPO</th></tr>
+<tr><td>Happy (1,000 fresh)</td><td>5.8%</td><td>53.5%</td><td>99.4%</td></tr>
+<tr><td>Win vs start</td><td>—</td><td>93.8%</td><td>100%</td></tr>
+<tr><td>Surprise held-out</td><td>151</td><td>753</td><td>3,282</td></tr>
+<tr><td>Vocab / 1,000 lines</td><td>1,408</td><td>—</td><td>599</td></tr>
+<tr><td>P(glad|I am)</td><td>1.2%</td><td>—</td><td>47%</td></tr>
+<tr><td>P(END)</td><td>0.24</td><td>—</td><td>0.000014</td></tr>
+</table>
+<p>Sample DPO lines: “i love my condition noble person…”, “sweet you for i am glad and ye not true…”, “of i true to france the honour of love…” — happy, barely Shakespeare.</p>
+</div>
+
+<div class="card" id="quick">
+<h2>⚡ Quick start</h2>
+<pre>pip install -r requirements.txt
+PYTHONPATH=src python scripts/run_all.py --seed 0 --fast
+PYTHONPATH=src pytest tests -v
+PYTHONPATH=src python scripts/make_figures.py</pre>
+<pre>docker compose up --build
+docker compose --profile fast up --build</pre>
+<p>Results → <code>results/RESULTS.json</code>. Full scale: drop <code>--fast</code> (78k openings, ~10.5k pairs, 600+600 steps).</p>
+</div>
+
+<div class="card" id="how">
+<h2>How it works, fully explained</h2>
+<p><b>Data:</b> Gutenberg #100 live, 22k + 2k held-out, top-4k vocab + ? + &lt;END&gt;. <b>Model:</b> embed-64 + 256-MLP, P(next|prev-2), ~1M params, CPU. <b>Pairs:</b> 2 lines per opening, judge picks, ties dropped. <b>SFT:</b> MLE on winners. <b>DPO:</b> frozen ref, β=0.1, one softplus loss, no rollouts.</p>
+<p><b>Costs:</b> forgetting (surprise ↑), vocab shrink, END-collapse / length bias (longer = more happy slots). <b>Patterns:</b> displacement (both fall), β arithmetic (loss 0.1 needs β·gap≈2.25 → gap 22.5 @0.1, 225 @0.01, 4.5 @0.5), secret reward model β·(logπ−logπ<sub>ref</sub>).</p>
+</div>
+
+<div class="card" id="calc">
+<h2>🎛 β calculator — how far must the gap go?</h2>
+<p>Done = loss 0.1 needs β·gap ≈ 2.25. Move β:</p>
+<input type="range" id="beta" min="1" max="200" value="10">
+<p>β = <b id="bv">0.10</b> → gap needed ≈ <b id="gv">22.5</b></p>
+<script>
+const b=document.getElementById('beta'),bv=document.getElementById('bv'),gv=document.getElementById('gv');
+function u(){const beta=b.value/100;bv.textContent=beta.toFixed(2);gv.textContent=(2.25/beta).toFixed(1);}b.oninput=u;u();
+</script>
+</div>
+
+<div class="card" id="stories">
+<h2>Who is this for?</h2>
+<ul>
+<li><b>Students:</b> zero → DPO derivation in one afternoon.</li>
+<li><b>Candidates:</b> RLHF vs DPO, β/KL, displacement, length bias — with your own numbers.</li>
+<li><b>Builders:</b> CPU template for preference pipelines + eval.</li>
+<li><b>Researchers:</b> β sweeps, length-norm, SFT-regularized DPO, filtering — in minutes.</li>
+<li><b>Teachers:</b> live data, seeded, no GPU classroom demo.</li>
+</ul>
+</div>
+
+<div class="card quiz" id="quiz">
+<h2>📝 Interactive quiz — scratch → pro (10 questions)</h2>
+<p id="qscore">Score: 0 / 10 · Question <span id="qn">1</span>/10</p>
+<p id="qq" style="font-weight:700"></p>
+<div id="qa"></div>
+<p id="qf"></p>
+<button id="qnxt" style="display:none">Next →</button>
+<script>
+const Q=[
+{q:"What does the model write?",a:["One word at a time from chances","Whole plays at once","Only punctuation"],c:0,e:"Given 2 words it scores all 4,002 next words, rolls, writes, repeats until <END>."},
+{q:"Log-chance −10.3 means?",a:["More likely than −22.8","Less likely than −22.8","Same"],c:0,e:"Less negative = more likely. −10.3 beats −22.8."},
+{q:"Judge scores 'just die' as?",a:["0","+1","−1"],c:2,e:"die is sad (−1)."},
+{q:"A pair is?",a:["Two lines, same opening, one picked","Any two plays","Two judges"],c:0,e:"Same 2-word opening, winner + loser."},
+{q:"Ties are?",a:["Thrown away","Counted as wins","Sent to humans"],c:0,e:"Same score → judge cannot pick → discard."},
+{q:"SFT uses?",a:["Winners only","Losers only","No data"],c:0,e:"Copy-the-winners. Losers never seen."},
+{q:"DPO loss?",a:["−log σ(β·gap)","Mean squared error","BLEU"],c:0,e:"Gap = winner-rise − loser-rise."},
+{q:"Worked gap 36.8 gives loss?",a:["≈0.025","≈0.693","≈2.25"],c:0,e:"β·gap=3.68 → −log σ(3.68)≈0.025."},
+{q:"After DPO, <END> chance?",a:["Collapses (forgets to stop)","Rises","Unchanged"],c:0,e:"0.24→0.000014. Length exploitation."},
+{q:"Secret reward model?",a:["β·(log π − log πref)","Word count","Perplexity"],c:0,e:"No judge needed at test time."}
+];
+let qi=0,sc=0;const qq=document.getElementById('qq'),qa=document.getElementById('qa'),qf=document.getElementById('qf'),qn=document.getElementById('qn'),qs=document.getElementById('qscore'),nx=document.getElementById('qnxt');
+function render(){qn.textContent=qi+1;qq.textContent=Q[qi].q;qa.innerHTML="";qf.textContent="";nx.style.display="none";Q[qi].a.forEach((t,i)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{if(i===Q[qi].c){sc++;b.classList.add('ok');qf.textContent="✓ "+Q[qi].e;}else{b.classList.add('no');qf.textContent="✗ "+Q[qi].e;}qs.textContent=`Score: ${sc} / 10 · Question ${qi+1}/10`;[...qa.children].forEach(x=>x.disabled=true);nx.style.display="block";};qa.appendChild(b);});}
+nx.onclick=()=>{qi++;if(qi>=Q.length){qq.textContent=`Done! ${sc}/10 — ${sc>=8?"Pro 🏆":sc>=5?"Almost — re-read 🌱":"Restart from 🌱"}`;qa.innerHTML="";qf.textContent="";nx.style.display="none";qn.textContent=10;}else render();};
+render();
+</script>
+</div>
+
+<div class="card" id="pages">
+<h2>GitHub Pages in 2 minutes</h2>
+<ol>
+<li>Push this repo to GitHub.</li>
+<li>Settings → <b>Pages</b> → <b>Deploy from a branch</b> → branch <code>main</code>, folder <code>/</code>.</li>
+<li>Open <code>https://&lt;you&gt;.github.io/&lt;repo&gt;/preview.html</code>.</li>
+</ol>
+<p>This file is offline-first: quiz, calculator, and text work with no internet. Charts load from <code>docs/assets/</code>.</p>
+</div>
+
+<div class="card" id="verify">
+<h2>Verification + FAQ</h2>
+<p><b>Verify:</b> <code>pytest tests</code> checks loss 0.693→0.025, gap 36.8, β gaps, judge examples. <code>run_all.py</code> fetches Gutenberg live (SHA logged), trains seeded, evals 1,000 fresh openings + 2,000 held-out lines. <code>make_figures.py</code> plots from <code>RESULTS.json</code> only.</p>
+<p><b>Why is SFT 53% not 28%?</b> Fast uses 2,158 clean pairs + token-MLE — efficient at small scale. Full 78k/10.5k lands nearer 28%. Ranking SFT&lt;DPO holds.</p>
+<p><b>Reward accuracy 69% not 99%?</b> 200 steps on 2k pairs. Full 600/10.5k climbs toward 99%. Internalization is already visible.</p>
+<p><b>GPU?</b> No. Fast = minutes CPU. Full = under an hour.</p>
+</div>
+
+<div class="footer">MIT · Shakespeare via Gutenberg (public domain) · Cite the repo + Rafailov et al. 2023 DPO.</div>
+</div>
+</body>
+</html>

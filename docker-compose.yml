@@ -1,0 +1,16 @@
+services:
+  dpo-lab:
+    build: .
+    volumes:
+      - ./results:/app/results
+    environment:
+      - PYTHONPATH=/app/src
+    command: python scripts/run_all.py --seed 0
+  dpo-lab-fast:
+    build: .
+    volumes:
+      - ./results:/app/results
+    environment:
+      - PYTHONPATH=/app/src
+    command: python scripts/run_all.py --seed 0 --fast
+    profiles: ["fast"]

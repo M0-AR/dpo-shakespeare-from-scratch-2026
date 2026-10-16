@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+results/pg100.txt
+results/*.pt
+.venv/

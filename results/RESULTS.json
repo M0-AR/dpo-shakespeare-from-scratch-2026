@@ -1,0 +1,115 @@
+{
+  "config": {
+    "seed": 0,
+    "vocab_size": 4000,
+    "embed_dim": 64,
+    "hidden_dim": 256,
+    "context_len": 2,
+    "max_line_len": 12,
+    "lm_epochs": 2,
+    "lm_batch": 512,
+    "lm_lr": 0.003,
+    "n_pairs_target": 12000,
+    "train_pairs_keep": 10593,
+    "sft_steps": 200,
+    "dpo_steps": 200,
+    "batch_size": 64,
+    "sft_lr": 0.003,
+    "dpo_lr": 0.001,
+    "beta": 0.1,
+    "eval_openings": 1000,
+    "data_url": "https://www.gutenberg.org/cache/epub/100/pg100.txt"
+  },
+  "data_source": "gutenberg-live",
+  "data_sha": "15b5ff264f494c45",
+  "n_openings_sampled": 12000,
+  "n_pairs_kept": 2158,
+  "n_ties": 9842,
+  "happy_share": {
+    "start": 0.058,
+    "sft": 0.535,
+    "dpo": 0.994
+  },
+  "win_rate_vs_start": {
+    "sft": 0.9380530973451328,
+    "dpo": 1.0
+  },
+  "surprise_heldout": {
+    "start": 150.8863190140313,
+    "sft": 753.0927718181154,
+    "dpo": 3282.1011472709897
+  },
+  "vocab_used_1000": {
+    "start": 1408,
+    "dpo": 599
+  },
+  "implicit_reward_acc_233": 0.6952789699570815,
+  "dpo_loss_hist": [
+    {
+      "step": 1,
+      "loss": 0.6931471824645996
+    },
+    {
+      "step": 100,
+      "loss": 0.3121265172958374
+    },
+    {
+      "step": 200,
+      "loss": 0.10492074489593506
+    }
+  ],
+  "exercise_check": {
+    "loss_before_0.693": 0.6931471805599453,
+    "loss_after_0.025": 0.02491012535736635,
+    "gap_36.8_beta_gap_3.68": 36.8
+  },
+  "micro_probe": {
+    "P_glad_given_I_am_start": 0.01174203772097826,
+    "P_glad_given_I_am_dpo": 0.4726782739162445,
+    "P_EOS_start": 0.23764163255691528,
+    "P_EOS_dpo": 1.4112380995356943e-05
+  },
+  "real_pair_logprobs": {
+    "w_start": -70.83753156661987,
+    "l_start": -66.41208124160767,
+    "w_dpo": -112.87086892127991,
+    "l_dpo": -111.74003165960312
+  },
+  "dpo_sample_lines": [
+    "i love my condition noble person and doubt i do not love",
+    "fair fall thee shepherd my love will not as true as not",
+    "of true love with him",
+    "i hope not fair windsor your two i my noble friend in",
+    "say true for your love would take thee this fair is sir",
+    "love thee again and love true d me as if we as",
+    "thou noble welcome too we have he grace for thunder noble proud",
+    "fair old i fair not adieu and he is now the kind",
+    "away his love i follow the love of grace and fair from",
+    "will make thee s love and three mistress love",
+    "sweet you for i am glad and ye not true ? me",
+    "of i true to france the honour of love s hope to"
+  ],
+  "video_targets": {
+    "happy": [
+      0.05,
+      0.28,
+      0.98
+    ],
+    "win": [
+      0.29,
+      0.965
+    ],
+    "surprise": [
+      190,
+      218,
+      1768
+    ],
+    "vocab": [
+      1029,
+      770
+    ],
+    "loss_before": 0.693,
+    "loss_after": 0.025,
+    "reward_acc": 0.99
+  }
+}
