@@ -7,7 +7,7 @@
 [![Docker ready](https://img.shields.io/badge/Docker-ready-blue.svg)](docker-compose.yml)
 [![Reproducible](https://img.shields.io/badge/reproducible-CPU-orange.svg)](scripts/run_all.py)
 
-**Live web version:** open `preview.html` in a browser, or enable GitHub Pages (Settings → Pages → Deploy from branch → `main` → `/`) and share the URL.
+**Live web version (click after Pages is on):** [Home `/`](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/) · [Interactive lab `/preview.html`](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/preview.html) · [Mirror `/docs/preview.html`](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/docs/preview.html)
 **Interactive quiz + visual lab:** inside `preview.html` — from scratch to pro in 15 minutes.
 
 ![DPO likelihood displacement demo](docs/assets/demo.gif)
@@ -205,11 +205,21 @@ Full config (`--seed 0` without `--fast`: 78k openings, ~10.5k pairs, 600+600 st
 
 `preview.html` is fully offline (no CDN needed for core content): hero, abstract, charts, code, β calculator, and a **10-question interactive quiz** (scratch → pro, with instant feedback and score).
 
+**Open in your browser (works under either Pages source setting):**
+
+| Entry | Link |
+|---|---|
+| `/` (home, redirects to lab) | [https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/) |
+| `/preview.html` (interactive lab) | [https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/preview.html](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/preview.html) |
+| `/docs/preview.html` (mirror) | [https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/docs/preview.html](https://m0-ar.github.io/dpo-shakespeare-from-scratch-2026/docs/preview.html) |
+
 Publish it:
 
-1. Push this folder to GitHub.
-2. Settings → **Pages** → **Deploy from a branch** → Branch `main`, folder `/` (or `/docs` if you move the file there).
-3. Open `https://<you>.github.io/<repo>/preview.html`.
+1. Push this folder to GitHub (already done).
+2. Settings → **Pages** → **Deploy from a branch** → Branch `main`, folder `/` (recommended; `/docs` also works — mirrors cover both).
+3. Wait 1–2 min for the “pages build and deployment” Action to go green, then click the three links above — all must return 200.
+
+Why three URLs? Pages serves paths relative to the chosen source: source `/` serves repo `docs/x` at `/docs/x`; source `/docs` serves it at `/x`. Root `index.html` (redirect) + `preview.html` + `docs/preview.html` + `docs/index.html` mirrors plus `.nojekyll` make every entry resolve under either setting.
 
 Screenshots in `docs/assets/` prove it renders. Re-take with Playwright:
 
